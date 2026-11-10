@@ -30,4 +30,5 @@ body { margin: 0; font-family: 'Inter', system-ui, sans-serif; color: var(--text
   padding: 32px; display: flex; flex-direction: column; gap: 14px; }
 .login-card h1 { margin: 0; font-size: 22px; font-weight: 700; }
 .subtitle { margin: 0; font-size: 14px; color: var(--muted); }
-.link-muted { text-align: center; font-size: 13px; color: var(--muted); }
+.link-muted { text-align: center; font-size: 13px; color: var(--muted); text-decoration: underline; }
+.subtitle.small { font-size: 13px; }
