@@ -1,16 +1,17 @@
 from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
 
-from database import Base, engine, get_db
+from database import Base, engine
 import models
 import auth
 import tasks
+import users
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 app.include_router(auth.router)
 app.include_router(tasks.router)
+app.include_router(users.router)
 
 
 @app.get("/health")
@@ -23,13 +24,3 @@ def me(user: models.User = Depends(auth.get_current_user)):
     return {"id": user.id, "full_name": user.full_name,
             "email": user.email, "role": user.role,
             "manager_id": user.manager_id}
-
-
-@app.get("/users")
-def list_users(db: Session = Depends(get_db)):
-    users = db.query(models.User).all()
-    return [
-        {"id": u.id, "full_name": u.full_name, "email": u.email,
-         "role": u.role, "manager_id": u.manager_id}
-        for u in users
-    ]
