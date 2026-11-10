@@ -32,3 +32,36 @@ body { margin: 0; font-family: 'Inter', system-ui, sans-serif; color: var(--text
 .subtitle { margin: 0; font-size: 14px; color: var(--muted); }
 .link-muted { text-align: center; font-size: 13px; color: var(--muted); text-decoration: underline; }
 .subtitle.small { font-size: 13px; }
+
+a.btn-primary { text-decoration: none; display: inline-block; }
+
+.header { display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 32px; background: var(--bg-header); }
+.header-title { font-size: 16px; font-weight: 700; color: var(--text); text-decoration: none; }
+.header-user { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-2); }
+.header-sep { width: 1px; height: 14px; background: var(--border); }
+.link-btn { background: none; border: none; padding: 0; font: inherit; color: var(--text-2); cursor: pointer; }
+.page { padding: 32px; display: flex; flex-direction: column; gap: 16px; }
+
+.tabs { display: flex; gap: 8px; }
+.tab { padding: 8px 16px; background: #fff; border: 1px solid var(--border); border-radius: 4px;
+  font: inherit; font-size: 13px; color: var(--text); cursor: pointer; }
+.tab.active { background: var(--tab-active); border-color: var(--primary-border); font-weight: 600; }
+.toolbar { display: flex; justify-content: space-between; align-items: center; }
+.select { width: 280px; color: var(--muted); }
+
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table th { background: var(--bg-th); text-align: left; font-weight: 600; padding: 12px;
+  border-bottom: 1px solid var(--border); }
+.table td { padding: 12px; border-bottom: 1px solid var(--border); }
+.table th:nth-child(2) { width: 260px; }
+.table th:nth-child(3) { width: 160px; }
+.table th:nth-child(4) { width: 180px; }
+.empty { padding: 24px 12px; font-size: 13px; color: var(--muted); }
+
+.badge { display: inline-block; padding: 3px 10px; border: 1px solid; border-radius: 12px;
+  font-size: 12px; font-weight: 600; white-space: nowrap; }
+.badge-new { background: var(--new-bg); border-color: var(--new); color: var(--new); }
+.badge-in_progress { background: var(--work-bg); border-color: var(--work); color: var(--work); }
+.badge-review { background: var(--review-bg); border-color: var(--review); color: var(--review); }
+.badge-done { background: var(--done-bg); border-color: var(--done); color: var(--done); }

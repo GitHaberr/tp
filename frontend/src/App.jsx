@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './auth'
 import LoginPage from './pages/LoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import TasksPage from './pages/TasksPage'
 
 function Protected({ children }) {
   const { user, loading } = useAuth()
@@ -16,7 +17,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/tasks" element={<Protected><h1>Список поручений</h1></Protected>} />
+          <Route path="/tasks" element={<Protected><TasksPage /></Protected>} />
           <Route path="/forgot" element={<ForgotPasswordPage />} />
           <Route path="/reset" element={<ResetPasswordPage />} />
           <Route path="*" element={<Navigate to="/tasks" replace />} />
