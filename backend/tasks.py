@@ -73,3 +73,19 @@ def list_tasks(
     else:
         tasks = db.query(Task).filter(Task.assignee_id == user.id).all()
     return [task_to_dict(t, db) for t in tasks]
+
+
+@router.get("/{task_id}")
+def get_task(
+    task_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    task = db.get(Task, task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Поручение не найдено")
+
+    if user.id not in (task.author_id, task.assignee_id):
+        raise HTTPException(status_code=403, detail="Нет доступа к этому поручению")
+
+    return task_to_dict(task, db)
