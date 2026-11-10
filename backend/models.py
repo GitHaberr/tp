@@ -1,4 +1,5 @@
-from sqlalchemy import ForeignKey, String
+from datetime import date, datetime
+from sqlalchemy import Date, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
 
@@ -12,3 +13,16 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(200))
     role: Mapped[str] = mapped_column(String(20))  # "boss" или "employee"
     manager_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+
+
+class Task(Base):
+    __tablename__ = "tasks"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(200))
+    description: Mapped[str] = mapped_column(Text, default="")
+    author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    assignee_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    deadline: Mapped[date] = mapped_column(Date)
+    status: Mapped[str] = mapped_column(String(20), default="new")  # new / in_progress / review / done
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
