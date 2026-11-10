@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from auth import get_current_user
+from constants import STATUS_LABELS, STATUSES, REVIEW
 from database import get_db
 from models import Task, User
 
@@ -28,6 +29,7 @@ def task_to_dict(task: Task, db: Session) -> dict:
         "assignee": assignee.full_name,
         "deadline": task.deadline.isoformat(),
         "status": task.status,
+        "status_label": STATUS_LABELS[task.status],
     }
 
 
@@ -65,13 +67,32 @@ def create_task(
 
 @router.get("")
 def list_tasks(
+    scope: str = "all",
+    status: str | None = None,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if user.role == "boss":
-        tasks = db.query(Task).filter(Task.author_id == user.id).all()
+    if scope not in ("all", "mine", "review"):
+        raise HTTPException(status_code=400, detail="Неизвестный раздел списка")
+    if status is not None and status not in STATUSES:
+        raise HTTPException(status_code=400, detail="Неизвестный статус")
+
+    query = db.query(Task)
+
+    if scope == "mine":
+        query = query.filter(Task.assignee_id == user.id)
     else:
-        tasks = db.query(Task).filter(Task.assignee_id == user.id).all()
+        if user.role == "boss":
+            query = query.filter(Task.author_id == user.id)
+        else:
+            query = query.filter(Task.assignee_id == user.id)
+        if scope == "review":
+            query = query.filter(Task.status == REVIEW)
+
+    if status is not None:
+        query = query.filter(Task.status == status)
+
+    tasks = query.order_by(Task.deadline).all()
     return [task_to_dict(t, db) for t in tasks]
 
 
