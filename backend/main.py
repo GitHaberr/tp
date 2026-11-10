@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from constants import STATUS_LABELS
+
 from database import Base, engine
 import models
 import auth
@@ -13,6 +14,12 @@ app = FastAPI()
 app.include_router(auth.router)
 app.include_router(tasks.router)
 app.include_router(users.router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,0 +1,67 @@
+:root {
+  --text: #1f2937; --text-2: #4b5563; --muted: #6b7280; --border: #9ca3af;
+  --bg-header: #f3f4f6; --bg-th: #e5e7eb;
+  --primary-bg: #bfdbfe; --primary-border: #3b82f6; --tab-active: #dbeafe;
+  --error: #dc2626; --error-bg: #fef2f2; --error-banner: #fee2e2; --error-text: #991b1b;
+  --new-bg: #dbeafe;    --new: #1d4ed8;
+  --work-bg: #fef3c7;   --work: #b45309;
+  --review-bg: #ede9fe; --review: #6d28d9;
+  --done-bg: #dcfce7;   --done: #15803d;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Inter', system-ui, sans-serif; color: var(--text); background: #fff; }
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 12px; font-weight: 500; color: var(--muted); }
+.input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 4px;
+  font: inherit; font-size: 14px; color: var(--text); background: #fff; }
+.input::placeholder { color: var(--border); }
+.input.invalid { border: 2px solid var(--error); background: var(--error-bg); padding: 11px; }
+.field-error { font-size: 12px; color: var(--error); }
+
+.btn-primary { padding: 10px 16px; background: var(--primary-bg); border: 1.5px solid var(--primary-border);
+  border-radius: 4px; font: inherit; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; }
+.btn-primary:disabled { opacity: .6; cursor: default; }
+.banner-error { display: flex; gap: 12px; align-items: center; padding: 12px; background: var(--error-banner);
+  border: 1.5px solid var(--error); border-radius: 4px; color: var(--error-text); font-size: 13px; font-weight: 500; }
+
+.login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.login-card { width: 420px; max-width: 100%; border: 1px solid var(--border); border-radius: 6px;
+  padding: 32px; display: flex; flex-direction: column; gap: 14px; }
+.login-card h1 { margin: 0; font-size: 22px; font-weight: 700; }
+.subtitle { margin: 0; font-size: 14px; color: var(--muted); }
+.link-muted { text-align: center; font-size: 13px; color: var(--muted); text-decoration: underline; }
+.subtitle.small { font-size: 13px; }
+
+a.btn-primary { text-decoration: none; display: inline-block; }
+
+.header { display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 32px; background: var(--bg-header); }
+.header-title { font-size: 16px; font-weight: 700; color: var(--text); text-decoration: none; }
+.header-user { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-2); }
+.header-sep { width: 1px; height: 14px; background: var(--border); }
+.link-btn { background: none; border: none; padding: 0; font: inherit; color: var(--text-2); cursor: pointer; }
+.page { padding: 32px; display: flex; flex-direction: column; gap: 16px; }
+
+.tabs { display: flex; gap: 8px; }
+.tab { padding: 8px 16px; background: #fff; border: 1px solid var(--border); border-radius: 4px;
+  font: inherit; font-size: 13px; color: var(--text); cursor: pointer; }
+.tab.active { background: var(--tab-active); border-color: var(--primary-border); font-weight: 600; }
+.toolbar { display: flex; justify-content: space-between; align-items: center; }
+.select { width: 280px; color: var(--muted); }
+
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table th { background: var(--bg-th); text-align: left; font-weight: 600; padding: 12px;
+  border-bottom: 1px solid var(--border); }
+.table td { padding: 12px; border-bottom: 1px solid var(--border); }
+.table th:nth-child(2) { width: 260px; }
+.table th:nth-child(3) { width: 160px; }
+.table th:nth-child(4) { width: 180px; }
+.empty { padding: 24px 12px; font-size: 13px; color: var(--muted); }
+
+.badge { display: inline-block; padding: 3px 10px; border: 1px solid; border-radius: 12px;
+  font-size: 12px; font-weight: 600; white-space: nowrap; }
+.badge-new { background: var(--new-bg); border-color: var(--new); color: var(--new); }
+.badge-in_progress { background: var(--work-bg); border-color: var(--work); color: var(--work); }
+.badge-review { background: var(--review-bg); border-color: var(--review); color: var(--review); }
+.badge-done { background: var(--done-bg); border-color: var(--done); color: var(--done); }
