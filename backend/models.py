@@ -2,6 +2,7 @@ from datetime import date, datetime
 from sqlalchemy import Date, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
+from constants import NEW
 
 
 class User(Base):
@@ -24,5 +25,5 @@ class Task(Base):
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     assignee_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     deadline: Mapped[date] = mapped_column(Date)
-    status: Mapped[str] = mapped_column(String(20), default="new")  # new / in_progress / review / done
+    status: Mapped[str] = mapped_column(String(20), default=NEW)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
