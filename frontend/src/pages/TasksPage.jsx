@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth'
 import Layout from '../components/Layout'
@@ -9,6 +9,7 @@ import { shortName, formatDate } from '../format'
 
 export default function TasksPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -65,7 +66,7 @@ export default function TasksPage() {
         </thead>
         <tbody>
           {shown.map((t) => (
-            <tr key={t.id}>
+            <tr key={t.id} className="clickable" onClick={() => navigate(`/tasks/${t.id}`)}>
               <td>{t.title}</td>
               <td>{shortName(t.assignee)}</td>
               <td>{formatDate(t.deadline)}</td>

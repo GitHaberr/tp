@@ -5,6 +5,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import TasksPage from './pages/TasksPage'
 import NewTaskPage from './pages/NewTaskPage'
+import TaskPage from './pages/TaskPage'
 
 function Protected({ children }) {
   const { user, loading } = useAuth()
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/tasks" element={<Protected><TasksPage /></Protected>} />
           <Route path="/tasks/new" element={<Protected><NewTaskPage /></Protected>} />
+          <Route path="/tasks/:id" element={<Protected><TaskPage /></Protected>} />
           <Route path="/forgot" element={<ForgotPasswordPage />} />
           <Route path="/reset" element={<ResetPasswordPage />} />
           <Route path="*" element={<Navigate to="/tasks" replace />} />
