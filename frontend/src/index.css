@@ -79,3 +79,19 @@ textarea.input { min-height: 96px; resize: vertical; }
 
 .btn-secondary { padding: 10px 16px; background: var(--bg-header); border: 1.5px solid var(--border);
   border-radius: 4px; font: inherit; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; }
+
+.table tbody tr.clickable { cursor: pointer; }
+.table tbody tr.clickable:hover { background: var(--bg-header); }
+
+.columns { display: flex; gap: 24px; align-items: stretch; }
+.details { flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: 6px; padding: 24px;
+  display: flex; flex-direction: column; gap: 16px; }
+.info { display: flex; gap: 48px; }
+.info-item { display: flex; flex-direction: column; gap: 2px; }
+.info-label { font-size: 12px; font-weight: 500; color: var(--muted); }
+.info-value { font-size: 14px; font-weight: 600; }
+.description { min-height: 72px; padding: 12px; border: 1px solid var(--border); border-radius: 4px;
+  font-size: 14px; white-space: pre-wrap; }
+.history { width: 380px; background: #f9fafb; border: 1px solid var(--border); border-radius: 6px;
+  padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+.history h2 { margin: 0; font-size: 14px; font-weight: 700; }
