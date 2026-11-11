@@ -4,9 +4,10 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from auth import get_current_user
-from constants import STATUS_LABELS, STATUSES, REVIEW
+from constants import ACTION_LABELS, NEW, STATUS_LABELS, STATUSES, REVIEW
 from database import get_db
-from models import Task, User
+from history import add_history
+from models import Task, TaskHistory, User
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -60,6 +61,8 @@ def create_task(
         deadline=data.deadline,
     )
     db.add(task)
+    db.flush()
+    add_history(db, task.id, user.id, "created", None, NEW)
     db.commit()
     db.refresh(task)
     return task_to_dict(task, db)
@@ -110,3 +113,36 @@ def get_task(
         raise HTTPException(status_code=403, detail="Нет доступа к этому поручению")
 
     return task_to_dict(task, db)
+
+@router.get("/{task_id}/history")
+def get_task_history(
+    task_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    task = db.get(Task, task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Поручение не найдено")
+
+    if user.id not in (task.author_id, task.assignee_id):
+        raise HTTPException(status_code=403, detail="Нет доступа к этому поручению")
+
+    records = (
+        db.query(TaskHistory)
+        .filter(TaskHistory.task_id == task_id)
+        .order_by(TaskHistory.created_at.desc(), TaskHistory.id.desc())
+        .all()
+    )
+    return [
+        {
+            "id": r.id,
+            "action": r.action,
+            "action_label": ACTION_LABELS.get(r.action, r.action),
+            "user": db.get(User, r.user_id).full_name,
+            "old_status": r.old_status,
+            "new_status": r.new_status,
+            "comment": r.comment,
+            "created_at": r.created_at.isoformat(),
+        }
+        for r in records
+    ]
