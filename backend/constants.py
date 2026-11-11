@@ -11,3 +11,7 @@ STATUS_LABELS = {
 }
 
 STATUSES = list(STATUS_LABELS.keys())
+
+ACTION_LABELS = {
+    "created": "Создал поручение",
+}
