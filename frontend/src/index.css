@@ -65,3 +65,17 @@ a.btn-primary { text-decoration: none; display: inline-block; }
 .badge-in_progress { background: var(--work-bg); border-color: var(--work); color: var(--work); }
 .badge-review { background: var(--review-bg); border-color: var(--review); color: var(--review); }
 .badge-done { background: var(--done-bg); border-color: var(--done); color: var(--done); }
+
+.page-title { margin: 0; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+.back-btn { background: none; border: none; padding: 0; font: inherit; color: var(--text); cursor: pointer; }
+
+.form-card { width: 640px; max-width: 100%; border: 1px solid var(--border); border-radius: 6px;
+  padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.form-row { display: flex; gap: 16px; }
+.form-row .field { flex: 1; min-width: 0; }
+textarea.input { min-height: 96px; resize: vertical; }
+.input.empty { color: var(--border); }
+.form-actions { display: flex; gap: 12px; }
+
+.btn-secondary { padding: 10px 16px; background: var(--bg-header); border: 1.5px solid var(--border);
+  border-radius: 4px; font: inherit; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; }
