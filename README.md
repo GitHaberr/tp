@@ -15,7 +15,6 @@
   - feature/frontend-base — базовый интерфейс фронтенда.
   - feature/frontend-auth — авторизация на фронтенде.
   - feature/frontend-tasks — экраны задач на фронтенде.
-  - test/api-sprint-1 — автотесты API на pytest.
 
   - test/api-sprint-1 — автотесты для API (pytest).
 
