@@ -70,3 +70,19 @@ def petrov_token(client):
 def sidorova_token(client):
     r = client.post("/auth/login", json={"email": "sidorova@firma.ru", "password": "1234"})
     return r.json()["access_token"]
+
+
+@pytest.fixture
+def task_by_boss(client, boss_token):
+    r = client.post(
+        "/tasks",
+        json={
+            "title": "Тестовое поручение",
+            "description": "Описание",
+            "assignee_id": 2,
+            "deadline": "2026-12-01"
+        },
+        headers={"Authorization": f"Bearer {boss_token}"}
+    )
+    assert r.status_code == 200
+    return r.json()
