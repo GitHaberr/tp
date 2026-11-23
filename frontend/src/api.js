@@ -18,10 +18,17 @@ export async function api(path, { method = 'GET', body } = {}) {
       body: body ? JSON.stringify(body) : undefined,
     })
   } catch {
-    throw new Error('Ошибка соединения')
+    const err = new Error('Ошибка соединения')
+    err.network = true
+    throw err
   }
 
   const data = await res.json().catch(() => null)
+   if (!res.ok && data === null && res.status >= 500) {
+    const err = new Error('Ошибка соединения')
+    err.network = true
+    throw err
+  }
 
   if (res.status === 401 && token) {
     clearToken()
