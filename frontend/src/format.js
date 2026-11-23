@@ -8,3 +8,9 @@ export function formatDate(iso) {
   const [y, m, d] = iso.split('-')
   return `${d}.${m}.${y}`
 }
+
+export function formatDateTime(iso) {
+  if (!iso) return ''
+  const [date, time = ''] = iso.split('T')
+  return `${formatDate(date)} ${time.slice(0, 5)}`
+}

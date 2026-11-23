@@ -95,3 +95,20 @@ textarea.input { min-height: 96px; resize: vertical; }
 .history { width: 380px; background: #f9fafb; border: 1px solid var(--border); border-radius: 6px;
   padding: 24px; display: flex; flex-direction: column; gap: 14px; }
 .history h2 { margin: 0; font-size: 14px; font-weight: 700; }
+
+.history-entry { display: flex; flex-direction: column; gap: 2px; border-left: 2px solid var(--border);
+  padding-left: 10px; font-size: 12px; }
+.history-head { font-weight: 500; color: var(--text); }
+.history-text { color: var(--muted); }
+
+.banner-text { flex: 1; }
+.btn-retry { padding: 6px 14px; background: #fff; border: 1.5px solid var(--error); border-radius: 4px;
+  font: inherit; font-size: 13px; font-weight: 600; color: var(--error-text); cursor: pointer; }
+.btn-secondary:disabled { opacity: .6; cursor: default; }
+
+.menu-wrap { position: relative; }
+.menu { position: absolute; top: 100%; left: 0; margin-top: 4px; min-width: 100%; background: #fff;
+  border: 1px solid var(--border); border-radius: 4px; z-index: 1; }
+.menu button { display: block; width: 100%; text-align: left; padding: 10px 16px; background: none;
+  border: none; font: inherit; font-size: 14px; color: var(--text); cursor: pointer; white-space: nowrap; }
+.menu button:hover { background: var(--bg-header); }
