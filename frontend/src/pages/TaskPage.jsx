@@ -3,20 +3,33 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
 import Layout from '../components/Layout'
 import StatusBadge from '../components/StatusBadge'
-import { shortName, formatDate } from '../format'
+import { STATUSES } from '../statuses'
+import { shortName, formatDate, formatDateTime } from '../format'
+
+function changeText(h) {
+  if (h.old_status && h.new_status) {
+    return `Статус: ${STATUSES[h.old_status] || h.old_status} → ${STATUSES[h.new_status] || h.new_status}`
+  }
+  return h.action_label
+}
 
 export default function TaskPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [task, setTask] = useState(null)
+  const [history, setHistory] = useState([])
   const [error, setError] = useState('')
 
   useEffect(() => {
     setTask(null)
+    setHistory([])
     setError('')
     api(`/tasks/${id}`)
       .then(setTask)
       .catch((e) => setError(e.message))
+    api(`/tasks/${id}/history`)
+      .then(setHistory)
+      .catch(() => {})
   }, [id])
 
   return (
@@ -55,6 +68,13 @@ export default function TaskPage() {
 
           <aside className="history">
             <h2>История изменений</h2>
+            {history.map((h) => (
+              <div className="history-entry" key={h.id}>
+                <span className="history-head">{formatDateTime(h.created_at)} — {shortName(h.user)}</span>
+                <span className="history-text">{changeText(h)}</span>
+                {h.comment && <span className="history-text">{h.comment}</span>}
+              </div>
+            ))}
           </aside>
         </div>
       )}

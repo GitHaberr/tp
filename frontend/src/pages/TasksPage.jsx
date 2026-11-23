@@ -11,24 +11,26 @@ export default function TasksPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [tasks, setTasks] = useState([])
+  const [reviewCount, setReviewCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [tab, setTab] = useState('all')
   const [status, setStatus] = useState('')
 
   useEffect(() => {
-    api('/tasks')
+    setLoading(true)
+    setError('')
+    const params = new URLSearchParams({ scope: tab })
+    if (status) params.set('status', status)
+    api(`/tasks?${params}`)
       .then(setTasks)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
+  }, [tab, status])
+
+  useEffect(() => {
+    api('/tasks?scope=review').then((r) => setReviewCount(r.length)).catch(() => {})
   }, [])
-
-  const reviewCount = tasks.filter((t) => t.status === 'review').length
-
-  let shown = tasks
-  if (tab === 'mine') shown = shown.filter((t) => t.assignee === user.full_name)
-  if (tab === 'review') shown = shown.filter((t) => t.status === 'review')
-  if (status) shown = shown.filter((t) => t.status === status)
 
   const tabs = [
     { id: 'all', label: 'Все' },
@@ -65,7 +67,7 @@ export default function TasksPage() {
           <tr><th>Название</th><th>Исполнитель</th><th>Срок</th><th>Статус</th></tr>
         </thead>
         <tbody>
-          {shown.map((t) => (
+          {tasks.map((t) => (
             <tr key={t.id} className="clickable" onClick={() => navigate(`/tasks/${t.id}`)}>
               <td>{t.title}</td>
               <td>{shortName(t.assignee)}</td>
@@ -75,7 +77,7 @@ export default function TasksPage() {
           ))}
         </tbody>
       </table>
-      {!loading && !error && shown.length === 0 && <div className="empty">Поручений нет</div>}
+      {!loading && !error && tasks.length === 0 && <div className="empty">Поручений нет</div>}
     </Layout>
   )
 }

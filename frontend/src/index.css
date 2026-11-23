@@ -95,3 +95,8 @@ textarea.input { min-height: 96px; resize: vertical; }
 .history { width: 380px; background: #f9fafb; border: 1px solid var(--border); border-radius: 6px;
   padding: 24px; display: flex; flex-direction: column; gap: 14px; }
 .history h2 { margin: 0; font-size: 14px; font-weight: 700; }
+
+.history-entry { display: flex; flex-direction: column; gap: 2px; border-left: 2px solid var(--border);
+  padding-left: 10px; font-size: 12px; }
+.history-head { font-weight: 500; color: var(--text); }
+.history-text { color: var(--muted); }
