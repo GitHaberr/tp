@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from auth import get_current_user
-from constants import ACTION_LABELS, ALLOWED_TRANSITIONS, IN_PROGRESS, NEW, STATUS_LABELS, STATUSES, REVIEW
+from constants import ACTION_LABELS, ALLOWED_TRANSITIONS, DONE, IN_PROGRESS, NEW, STATUS_LABELS, STATUSES, REVIEW
 from database import get_db
 from history import add_history
 from notifications import add_notification
@@ -25,6 +25,9 @@ class TaskCreate(BaseModel):
 
 class StatusChange(BaseModel):
     status: str
+
+class CommentData(BaseModel):
+    comment: str = ""
 
 
 def task_to_dict(task: Task, db: Session) -> dict:
@@ -218,6 +221,80 @@ def submit_task(
         task.author_id,
         task.id,
         f"{short_name(user.full_name)} отметил поручение «{task.title}» выполненным. Требуется подтверждение.",
+    )
+    db.commit()
+    db.refresh(task)
+    return task_to_dict(task, db)
+
+
+@router.post("/{task_id}/approve")
+def approve_task(
+    task_id: int,
+    data: CommentData = CommentData(),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    task = db.get(Task, task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Поручение не найдено")
+
+    if user.id not in (task.author_id, task.assignee_id):
+        raise HTTPException(status_code=403, detail="Нет доступа к этому поручению")
+
+    if user.id != task.author_id:
+        raise HTTPException(status_code=403, detail="Подтвердить или вернуть поручение может только автор")
+
+    if task.status != REVIEW:
+        raise HTTPException(status_code=400, detail="Недопустимое изменение статуса")
+
+    now = datetime.now()
+    task.status = DONE
+    task.updated_at = now
+    task.closed_at = now
+    add_history(db, task.id, user.id, "approved", REVIEW, DONE, data.comment.strip())
+    add_notification(
+        db,
+        task.assignee_id,
+        task.id,
+        f"Поручение «{task.title}» подтверждено и закрыто.",
+    )
+    db.commit()
+    db.refresh(task)
+    return task_to_dict(task, db)
+
+
+@router.post("/{task_id}/reject")
+def reject_task(
+    task_id: int,
+    data: CommentData,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    task = db.get(Task, task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Поручение не найдено")
+
+    if user.id not in (task.author_id, task.assignee_id):
+        raise HTTPException(status_code=403, detail="Нет доступа к этому поручению")
+
+    if user.id != task.author_id:
+        raise HTTPException(status_code=403, detail="Подтвердить или вернуть поручение может только автор")
+
+    if task.status != REVIEW:
+        raise HTTPException(status_code=400, detail="Недопустимое изменение статуса")
+
+    comment = data.comment.strip()
+    if not comment:
+        raise HTTPException(status_code=400, detail="Укажите комментарий — он обязателен при возврате поручения")
+
+    task.status = IN_PROGRESS
+    task.updated_at = datetime.now()
+    add_history(db, task.id, user.id, "rejected", REVIEW, IN_PROGRESS, comment)
+    add_notification(
+        db,
+        task.assignee_id,
+        task.id,
+        f"Поручение «{task.title}» возвращено в работу: {comment}",
     )
     db.commit()
     db.refresh(task)
