@@ -20,6 +20,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/tasks" element={<Protected><TasksPage /></Protected>} />
+          <Route path="/tasks/:id/edit" element={<Protected><NewTaskPage /></Protected>} />
           <Route path="/tasks/new" element={<Protected><NewTaskPage /></Protected>} />
           <Route path="/tasks/:id" element={<Protected><TaskPage /></Protected>} />
           <Route path="/forgot" element={<ForgotPasswordPage />} />
