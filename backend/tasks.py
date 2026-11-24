@@ -4,9 +4,10 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from auth import get_current_user
-from constants import ACTION_LABELS, ALLOWED_TRANSITIONS, NEW, STATUS_LABELS, STATUSES, REVIEW
+from constants import ACTION_LABELS, ALLOWED_TRANSITIONS, IN_PROGRESS, NEW, STATUS_LABELS, STATUSES, REVIEW
 from database import get_db
 from history import add_history
+from notifications import add_notification
 from models import Task, TaskHistory, User
 
 def short_name(full_name: str) -> str:
@@ -190,3 +191,34 @@ def change_status(
     db.refresh(task)
     return task_to_dict(task, db)
 
+@router.post("/{task_id}/submit")
+def submit_task(
+    task_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    task = db.get(Task, task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Поручение не найдено")
+
+    if user.id not in (task.author_id, task.assignee_id):
+        raise HTTPException(status_code=403, detail="Нет доступа к этому поручению")
+
+    if user.id != task.assignee_id:
+        raise HTTPException(status_code=403, detail="Передать на проверку может только исполнитель")
+
+    if task.status != IN_PROGRESS:
+        raise HTTPException(status_code=400, detail="Недопустимое изменение статуса")
+
+    task.status = REVIEW
+    task.updated_at = datetime.now()
+    add_history(db, task.id, user.id, "submitted", IN_PROGRESS, REVIEW)
+    add_notification(
+        db,
+        task.author_id,
+        task.id,
+        f"{short_name(user.full_name)} отметил поручение «{task.title}» выполненным. Требуется подтверждение.",
+    )
+    db.commit()
+    db.refresh(task)
+    return task_to_dict(task, db)
