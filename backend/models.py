@@ -27,7 +27,8 @@ class Task(Base):
     deadline: Mapped[date] = mapped_column(Date)
     status: Mapped[str] = mapped_column(String(20), default=NEW)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 class PasswordResetToken(Base):
     __tablename__ = "password_reset_tokens"
