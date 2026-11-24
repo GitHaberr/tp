@@ -299,3 +299,63 @@ def reject_task(
     db.commit()
     db.refresh(task)
     return task_to_dict(task, db)
+
+@router.put("/{task_id}")
+def update_task(
+    task_id: int,
+    data: TaskCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    task = db.get(Task, task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Поручение не найдено")
+
+    if user.id not in (task.author_id, task.assignee_id):
+        raise HTTPException(status_code=403, detail="Нет доступа к этому поручению")
+
+    if user.id != task.author_id:
+        raise HTTPException(status_code=403, detail="Редактировать поручение может только автор")
+
+    if task.status == DONE:
+        raise HTTPException(status_code=400, detail="Закрытое поручение нельзя редактировать")
+
+    title = data.title.strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="Введите название поручения")
+
+    assignee = db.get(User, data.assignee_id)
+    if assignee is None or assignee.manager_id != user.id:
+        raise HTTPException(status_code=400, detail="Выберите исполнителя из своих подчинённых")
+
+
+    if data.deadline != task.deadline and data.deadline < date.today():
+        raise HTTPException(status_code=400, detail="Срок не может быть раньше сегодняшней даты")
+
+    changes = []
+    if title != task.title:
+        changes.append("название")
+    if data.description != task.description:
+        changes.append("описание")
+    if assignee.id != task.assignee_id:
+        old_assignee = db.get(User, task.assignee_id)
+        changes.append(
+            f"исполнитель: {short_name(old_assignee.full_name)} → {short_name(assignee.full_name)}"
+        )
+    if data.deadline != task.deadline:
+        changes.append(
+            f"срок: {task.deadline.strftime('%d.%m.%Y')} → {data.deadline.strftime('%d.%m.%Y')}"
+        )
+
+    if not changes:
+        return task_to_dict(task, db)
+
+    task.title = title
+    task.description = data.description
+    task.assignee_id = assignee.id
+    task.deadline = data.deadline
+    task.updated_at = datetime.now()
+    add_history(db, task.id, user.id, "updated", None, None, "Изменено: " + "; ".join(changes))
+    db.commit()
+    db.refresh(task)
+    return task_to_dict(task, db)
