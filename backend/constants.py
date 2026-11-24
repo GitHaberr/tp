@@ -19,4 +19,5 @@ ALLOWED_TRANSITIONS = {
 ACTION_LABELS = {
     "created": "Создал поручение",
     "status_changed": "Изменил статус",
+    "submitted": "Передал на проверку",
 }
