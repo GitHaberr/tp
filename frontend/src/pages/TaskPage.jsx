@@ -20,6 +20,9 @@ function changeText(h) {
 const isAssignee = (task, user) =>
   task.assignee_id !== undefined ? task.assignee_id === user.id : task.assignee === user.full_name
 
+const isAuthor = (task, user) =>
+  task.author_id !== undefined ? task.author_id === user.id : task.author === user.full_name
+
 export default function TaskPage() {
   const { id } = useParams()
   const { user } = useAuth()
@@ -30,6 +33,8 @@ export default function TaskPage() {
   const [actionError, setActionError] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [comment, setComment] = useState('')
+  const [commentError, setCommentError] = useState('')
 
   function load() {
     api(`/tasks/${id}`).then(setTask).catch((e) => setError(e.message))
@@ -41,6 +46,8 @@ export default function TaskPage() {
     setHistory([])
     setError('')
     setActionError(null)
+    setComment('')
+    setCommentError('')
     load()
   }, [id])
 
@@ -61,8 +68,26 @@ export default function TaskPage() {
   const changeStatus = (status) =>
     run(() => api(`/tasks/${id}/status`, { method: 'PATCH', body: { status } }))
   const submit = () => run(() => api(`/tasks/${id}/submit`, { method: 'POST' }))
+    const approve = () =>
+    run(async () => {
+      await api(`/tasks/${id}/approve`, { method: 'POST', body: { comment: comment.trim() } })
+      setComment('')
+    })
+
+  function reject() {
+    if (!comment.trim()) {
+      setCommentError('Укажите комментарий — он обязателен при возврате поручения')
+      return
+    }
+    setCommentError('')
+    run(async () => {
+      await api(`/tasks/${id}/reject`, { method: 'POST', body: { comment: comment.trim() } })
+      setComment('')
+    })
+  }
 
   const mine = task && isAssignee(task, user)
+  const author = task && isAuthor(task, user)
   const options = task ? NEXT_STATUSES[task.status] || [] : []
 
   return (
@@ -123,6 +148,26 @@ export default function TaskPage() {
                     Готово — передать на проверку
                   </button>
                 )}
+                            {author && task.status === 'review' && (
+              <>
+                <div className="field">
+                  <label htmlFor="review-comment">Комментарий к проверке</label>
+                  <textarea id="review-comment" className={'input short' + (commentError ? ' invalid' : '')}
+                    placeholder="Необязательно при подтверждении, обязательно при возврате"
+                    value={comment}
+                    onChange={(e) => { setComment(e.target.value); setCommentError('') }} />
+                  {commentError && <span className="field-error">{commentError}</span>}
+                </div>
+                <div className="form-actions">
+                  <button type="button" className="btn-primary" disabled={busy} onClick={approve}>
+                    Подтвердить выполнение
+                  </button>
+                  <button type="button" className="btn-secondary" disabled={busy} onClick={reject}>
+                    Вернуть в работу
+                  </button>
+                </div>
+              </>
+            )}
               </div>
             )}
           </div>
