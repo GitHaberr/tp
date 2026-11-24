@@ -1,13 +1,17 @@
-from datetime import date
+from datetime import date, datetime
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from auth import get_current_user
-from constants import ACTION_LABELS, NEW, STATUS_LABELS, STATUSES, REVIEW
+from constants import ACTION_LABELS, ALLOWED_TRANSITIONS, NEW, STATUS_LABELS, STATUSES, REVIEW
 from database import get_db
 from history import add_history
 from models import Task, TaskHistory, User
+
+def short_name(full_name: str) -> str:
+    parts = full_name.split()
+    return f"{parts[0]} {parts[1][0]}." if len(parts) > 1 else full_name
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -18,12 +22,17 @@ class TaskCreate(BaseModel):
     assignee_id: int
     deadline: date
 
+class StatusChange(BaseModel):
+    status: str
+
 
 def task_to_dict(task: Task, db: Session) -> dict:
     author = db.get(User, task.author_id)
     assignee = db.get(User, task.assignee_id)
     return {
         "id": task.id,
+        "author_id": task.author_id,
+        "assignee_id": task.assignee_id,
         "title": task.title,
         "description": task.description,
         "author": author.full_name,
@@ -62,7 +71,8 @@ def create_task(
     )
     db.add(task)
     db.flush()
-    add_history(db, task.id, user.id, "created", None, NEW)
+    add_history(db, task.id, user.id, "created", None, NEW,
+                f"назначил: {short_name(assignee.full_name)}")
     db.commit()
     db.refresh(task)
     return task_to_dict(task, db)
@@ -141,8 +151,42 @@ def get_task_history(
             "user": db.get(User, r.user_id).full_name,
             "old_status": r.old_status,
             "new_status": r.new_status,
+            "old_status_label": STATUS_LABELS.get(r.old_status),
+            "new_status_label": STATUS_LABELS.get(r.new_status),
             "comment": r.comment,
             "created_at": r.created_at.isoformat(),
         }
         for r in records
     ]
+
+@router.patch("/{task_id}/status")
+def change_status(
+    task_id: int,
+    data: StatusChange,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    task = db.get(Task, task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Поручение не найдено")
+
+    if user.id not in (task.author_id, task.assignee_id):
+        raise HTTPException(status_code=403, detail="Нет доступа к этому поручению")
+
+    if user.id != task.assignee_id:
+        raise HTTPException(status_code=403, detail="Менять статус может только исполнитель")
+
+    if data.status not in STATUSES:
+        raise HTTPException(status_code=400, detail="Неизвестный статус")
+
+    if (task.status, data.status) not in ALLOWED_TRANSITIONS:
+        raise HTTPException(status_code=400, detail="Недопустимое изменение статуса")
+
+    old_status = task.status
+    task.status = data.status
+    task.updated_at = datetime.now()
+    add_history(db, task.id, user.id, "status_changed", old_status, data.status)
+    db.commit()
+    db.refresh(task)
+    return task_to_dict(task, db)
+
