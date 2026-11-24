@@ -12,6 +12,11 @@ STATUS_LABELS = {
 
 STATUSES = list(STATUS_LABELS.keys())
 
+ALLOWED_TRANSITIONS = {
+    (NEW, IN_PROGRESS),
+}
+
 ACTION_LABELS = {
     "created": "Создал поручение",
+    "status_changed": "Изменил статус",
 }
