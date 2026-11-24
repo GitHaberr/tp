@@ -19,7 +19,6 @@ function changeText(h) {
 
 const isAssignee = (task, user) =>
   task.assignee_id !== undefined ? task.assignee_id === user.id : task.assignee === user.full_name
-
 const isAuthor = (task, user) =>
   task.author_id !== undefined ? task.author_id === user.id : task.author === user.full_name
 
@@ -68,7 +67,7 @@ export default function TaskPage() {
   const changeStatus = (status) =>
     run(() => api(`/tasks/${id}/status`, { method: 'PATCH', body: { status } }))
   const submit = () => run(() => api(`/tasks/${id}/submit`, { method: 'POST' }))
-    const approve = () =>
+  const approve = () =>
     run(async () => {
       await api(`/tasks/${id}/approve`, { method: 'POST', body: { comment: comment.trim() } })
       setComment('')
@@ -88,7 +87,15 @@ export default function TaskPage() {
 
   const mine = task && isAssignee(task, user)
   const author = task && isAuthor(task, user)
+  const canEdit = author && task.status !== 'done'
   const options = task ? NEXT_STATUSES[task.status] || [] : []
+
+  const editButton = (
+    <button type="button" className="btn-secondary" disabled={busy}
+      onClick={() => navigate(`/tasks/${id}/edit`)}>
+      Редактировать
+    </button>
+  )
 
   return (
     <Layout>
@@ -148,7 +155,9 @@ export default function TaskPage() {
                     Готово — передать на проверку
                   </button>
                 )}
-                            {author && task.status === 'review' && (
+              </div>
+            )}
+            {author && task.status === 'review' && (
               <>
                 <div className="field">
                   <label htmlFor="review-comment">Комментарий к проверке</label>
@@ -165,10 +174,13 @@ export default function TaskPage() {
                   <button type="button" className="btn-secondary" disabled={busy} onClick={reject}>
                     Вернуть в работу
                   </button>
+                  {canEdit && editButton}
                 </div>
               </>
             )}
-              </div>
+
+            {canEdit && task.status !== 'review' && (
+              <div className="form-actions">{editButton}</div>
             )}
           </div>
 

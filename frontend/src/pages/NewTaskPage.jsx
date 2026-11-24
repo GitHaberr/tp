@@ -1,33 +1,54 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
 import Layout from '../components/Layout'
 
 const today = () => new Date().toLocaleDateString('sv-SE')
 
 export default function NewTaskPage() {
+  const { id } = useParams()
+  const editing = Boolean(id)
+  const backTo = editing ? `/tasks/${id}` : '/tasks'
   const navigate = useNavigate()
   const [subordinates, setSubordinates] = useState([])
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [assigneeId, setAssigneeId] = useState('')
   const [deadline, setDeadline] = useState('')
+  const [originalDeadline, setOriginalDeadline] = useState('')
   const [errors, setErrors] = useState({})
   const [formError, setFormError] = useState('')
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    api('/users/subordinates')
-      .then(setSubordinates)
+    const requests = [api('/users/subordinates')]
+    if (editing) requests.push(api(`/tasks/${id}`))
+    Promise.all(requests)
+      .then(([subs, task]) => {
+        setSubordinates(subs)
+        if (task) {
+          setTitle(task.title)
+          setDescription(task.description || '')
+          setDeadline(task.deadline)
+          setOriginalDeadline(task.deadline)
+          const person = subs.find((u) =>
+            task.assignee_id !== undefined ? u.id === task.assignee_id : u.full_name === task.assignee
+          )
+          setAssigneeId(person ? String(person.id) : '')
+        }
+      })
       .catch((e) => setFormError(e.message))
-  }, [])
+  }, [id])
 
   function validate() {
     const next = {}
     if (!title.trim()) next.title = 'Введите название поручения'
     if (!assigneeId) next.assignee = 'Выберите исполнителя'
     if (!deadline) next.deadline = 'Укажите срок выполнения'
-    else if (deadline < today()) next.deadline = 'Срок не может быть раньше сегодняшней даты'
+
+    else if (deadline < today() && deadline !== originalDeadline) {
+      next.deadline = 'Срок не может быть раньше сегодняшней даты'
+    }
     return next
   }
 
@@ -40,11 +61,11 @@ export default function NewTaskPage() {
 
     setBusy(true)
     try {
-      await api('/tasks', {
-        method: 'POST',
+      await api(editing ? `/tasks/${id}` : '/tasks', {
+        method: editing ? 'PUT' : 'POST',
         body: { title: title.trim(), description, assignee_id: Number(assigneeId), deadline },
       })
-      navigate('/tasks')
+      navigate(backTo)
     } catch (err) {
       const m = err.message
       if (m.includes('название')) setErrors({ title: m })
@@ -59,8 +80,8 @@ export default function NewTaskPage() {
   return (
     <Layout>
       <h1 className="page-title">
-        <button type="button" className="back-btn" onClick={() => navigate('/tasks')} aria-label="Назад">←</button>
-        Новое поручение
+        <button type="button" className="back-btn" onClick={() => navigate(backTo)} aria-label="Назад">←</button>
+        {editing ? 'Редактирование поручения' : 'Новое поручение'}
       </h1>
 
       <form className="form-card" onSubmit={onSubmit} noValidate>
@@ -102,7 +123,7 @@ export default function NewTaskPage() {
 
         <div className="form-actions">
           <button className="btn-primary" disabled={busy}>Сохранить и назначить</button>
-          <button type="button" className="btn-secondary" onClick={() => navigate('/tasks')}>Отмена</button>
+          <button type="button" className="btn-secondary" onClick={() => navigate(backTo)}>Отмена</button>
         </div>
       </form>
     </Layout>
