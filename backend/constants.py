@@ -20,4 +20,6 @@ ACTION_LABELS = {
     "created": "Создал поручение",
     "status_changed": "Изменил статус",
     "submitted": "Передал на проверку",
+    "approved": "Подтвердил выполнение",
+    "rejected": "Вернул в работу",
 }
